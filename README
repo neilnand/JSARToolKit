@@ -66,4 +66,4 @@ Ensure you have the following repositories setup:
         $ grunt devwatch
 
 
-Have both 2 & 3 running in separate Terminal tabs when developing demos.
+Have both 2 & 3 running in separate Terminal tabs and start developing demos!
