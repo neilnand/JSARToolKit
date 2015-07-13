@@ -37,3 +37,33 @@ The FLARToolKit is ActionScript 3.0 version ARToolkit class library.
 
 JSARToolkit is a JavaScript port of NyARToolkitAS3 and FLARToolKit.
   Copyright (C)2011 Ilmari Heikkinen
+
+--------------------------------------------------------------------------------
+NPM & Express server added by @neilnand
+
+### Installation
+
+##### Pre-requisites
+Ensure you have the following repositories setup:
+
+- NodeJS / NPM: [nodejs.org](http://nodejs.org/), download and install **NodeJS**
+- Compass / SASS: <http://compass-style.org/install/>
+
+##### Instructions
+
+1. download this repository and install dependencies
+
+        $ git clone git@github.com:neilnand/JSARToolKit.git
+        $ cd JSARToolKit
+        $ npm install
+
+2. start server
+
+        $ grunt
+
+3. live updates - watch for changes
+
+        $ grunt devwatch
+
+
+Have both 2 & 3 running in separate Terminal tabs when developing demos.
