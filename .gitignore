@@ -1,3 +1,4 @@
+demos/neilnand/**/*.js
 demos/neilnand/**/*.html
 demos/neilnand/**/*.css
 demos/neilnand/**/*.css.map

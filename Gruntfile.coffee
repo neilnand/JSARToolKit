@@ -8,8 +8,9 @@ module.exports = (grunt) ->
   gruntTaskList = {
     default: [
       "coffeelint:dev"
-      "jade:demo"
+      "coffee:demo"
       "sass:demo"
+      "jade:demo"
       "exec:dev"
     ]
     devwatch: [
@@ -55,16 +56,28 @@ module.exports = (grunt) ->
         options:
           style: "expanded"
 
+    # Convert CoffeeScript into JavaScript
+    coffee:
+      demo:
+        expand: true,
+        cwd: "demos"
+        src: "**/*.coffee"
+        dest: "demos"
+        ext: ".js"
+
     # Watch for changes in development
     watch:
       options:
         livereload: npmPackage.ports.livereload
       demo:
         files: [
+          "demos/**/*.coffee"
           "demos/**/*.jade"
           "demos/**/*.sass"
         ]
         tasks: [
+          "coffeelint:dev"
+          "coffee:demo"
           "jade:demo"
           "sass:demo"
         ]
