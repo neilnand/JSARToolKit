@@ -1,0 +1,25 @@
+{
+  "name": "JSARToolKit",
+  "main": "server.coffee",
+  "version": "1.1.0",
+  "homepage": "https://github.com/neilnand/JSARToolKit",
+  "description": "Javascript Augmented Reality Toolkit",
+  "keywords": [
+    "javascript",
+    "augemented",
+    "reality",
+    "js",
+    "ar",
+    "flartoolkit"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4"
+  }
+}

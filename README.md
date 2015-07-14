@@ -56,6 +56,8 @@ Ensure you have the following repositories setup:
         $ git clone git@github.com:neilnand/JSARToolKit.git
         $ cd JSARToolKit
         $ npm install
+        $ bower install
+        $ grunt bowerlink
 
 2. start server
 

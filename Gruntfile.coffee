@@ -13,6 +13,9 @@ module.exports = (grunt) ->
       "jade:demo"
       "exec:dev"
     ]
+    bowerlink: [
+      "symlink:components"
+    ]
     devwatch: [
       "watch:demo"
     ]
@@ -64,6 +67,14 @@ module.exports = (grunt) ->
         src: "**/*.coffee"
         dest: "demos"
         ext: ".js"
+
+    # Create reference shortcuts
+    symlink:
+      components:
+        dest: "demos/resources"
+        relativeSrc: "./../bower_components/"
+        options:
+          type: "dir"
 
     # Watch for changes in development
     watch:

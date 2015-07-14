@@ -28,6 +28,13 @@ class CanvasStream
   render: ->
     @context.drawImage @videoDom, 0, 0
 
+class JSAR
+  constructor: ->
+    @fparams = new FLARParam WIDTH, HEIGHT
+    @mpattern = new FLARCode 64, 64
+
+    console.log this
+
 
 # Init
 WIDTH = 640
@@ -38,14 +45,16 @@ if navigator.getUserMedia
   console.log "Camera Available"
 
   # Setup Elements
-  video = document.querySelector "video"
-  video.onloadedmetadata = (evt) ->
+  jsar = new JSAR()
+
+  video = $ "video"
+  video[0].onloadedmetadata = (evt) ->
     console.log "video.onloadedmetadata", evt
 
-  canvas = document.querySelector "canvas"
-  canvas.width = WIDTH
-  canvas.height = HEIGHT
-  canvasStream = new CanvasStream canvas, video
+  canvas = $ "canvas"
+  canvas[0].width = WIDTH
+  canvas[0].height = HEIGHT
+  canvasStream = new CanvasStream canvas[0], video[0]
 
   # Get Camera Feed
   navigator.getUserMedia {
@@ -56,7 +65,7 @@ if navigator.getUserMedia
     }, (stream) ->
 
     # Set Camera Feeds
-    video.src = window.URL.createObjectURL stream
+    video.attr "src", window.URL.createObjectURL stream
     canvasStream.update()
 
   , (evt) ->
