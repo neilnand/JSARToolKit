@@ -1,6 +1,7 @@
 # Properties
 WIDTH = 640
 HEIGHT = 320
+USE_CAMERA = false
 
 # Shim
 navigator.getUserMedia =
@@ -53,8 +54,10 @@ class JSAREngine
     @context = @canvasDom.getContext "2d"
   update: =>
 
-    @processVisuals()
-    @processDetection()
+    try
+      @processVisuals()
+      @processDetection()
+      @render()
 
     window.requestAnimFrame =>
       @update()
@@ -90,27 +93,32 @@ class JSAREngine
 
       idx++
 
+  render: ->
+    for marker in @jsar.markers
+      console.log marker
 
-# Init
-if navigator.getUserMedia
-  
+
+# Setup Elements
+video = $ "video"
+video[0].width = WIDTH
+video[0].height = HEIGHT
+video[0].controls = false
+video[0].onloadedmetadata = (evt) ->
+  console.log "video.onloadedmetadata", evt
+
+canvas = $ "canvas.output"
+canvas[0].width = WIDTH
+canvas[0].height = HEIGHT
+
+canvasGL = $ "canvas.gl"
+canvasGL[0].width = WIDTH
+canvasGL[0].height = HEIGHT
+
+jsar = new JSAR canvas[0], canvasGL[0]
+jsarEngine = new JSAREngine canvas[0], video[0], jsar
+
+if navigator.getUserMedia and USE_CAMERA
   console.log "Camera Available"
-
-  # Setup Elements
-  video = $ "video"
-  video[0].onloadedmetadata = (evt) ->
-    console.log "video.onloadedmetadata", evt
-
-  canvas = $ "canvas.output"
-  canvas[0].width = WIDTH
-  canvas[0].height = HEIGHT
-
-  canvasGL = $ "canvas.gl"
-  canvasGL[0].width = WIDTH
-  canvasGL[0].height = HEIGHT
-
-  jsar = new JSAR canvas[0], canvasGL[0]
-  jsarEngine = new JSAREngine canvas[0], video[0], jsar
 
   # Get Camera Feed
   navigator.getUserMedia {
@@ -129,3 +137,7 @@ if navigator.getUserMedia
 
 else
   console.log "Camera Not Available"
+
+  video.attr "src", "video_test.mp4"
+  video[0].loop = true
+  jsarEngine.update()
