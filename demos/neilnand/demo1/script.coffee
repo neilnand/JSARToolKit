@@ -22,7 +22,32 @@ class Error
   constructor: (msg, e) ->
     console.log "ERROR:", msg, e
 
-class CanvasStream
+
+
+class JSAR
+  constructor: (
+    canvasDom
+    canvasGLDom
+  ) ->
+    @raster = new NyARRgbRaster_Canvas2D canvasDom
+    @param = new FLARParam WIDTH, HEIGHT
+    @detector = new FLARMultiIdMarkerDetector @param, 120
+    @detector.setContinueMode true
+    @resultMat = new NyARTransMatResult()
+
+    display = new Magi.Scene canvasGLDom
+
+    @param.copyCameraMatrix display.camera.perspectiveMatrix, 10, 10000
+    display.camera.useProjectionMatrix = true;
+
+    @videoTex = new Magi.FlipFilterQuad()
+    @videoTex.material.textures.Texture0 = new Magi.Texture()
+    @videoTex.material.textures.Texture0.image = canvasDom
+    @videoTex.material.textures.Texture0.generateMipmaps = false
+    display.scene.appendChild @videoTex
+
+
+class JSAREngine
   constructor: (@canvasDom, @videoDom, @jsar) ->
     @context = @canvasDom.getContext "2d"
   update: =>
@@ -30,11 +55,15 @@ class CanvasStream
     window.requestAnimFrame =>
       @update()
   render: ->
+
     @context.drawImage @videoDom, 0, 0, WIDTH, HEIGHT
     @canvasDom.changed = true
+
+    @jsar.videoTex.material.textures.Texture0.changed = true
+    @jsar.videoTex.material.textures.Texture0.upload()
+
     markerCount = @jsar.detector.detectMarkerLite(@jsar.raster, 170)
 
-    resultMat = new NyARTransMatResult()
     markers = {}
 
     idx = 0
@@ -53,28 +82,13 @@ class CanvasStream
       if markers[currId] is null
         markers[currId] = {}
 
-      @jsar.detector.getTransformMatrix idx, resultMat
+      @jsar.detector.getTransformMatrix idx, @jsar.resultMat
 
-      console.log markers[currId], Object.asCopy resultMat
+      console.log markers[currId], Object.asCopy @jsar.resultMat
 
-      markers[currId]?.transform = Object.asCopy resultMat
+      markers[currId]?.transform = Object.asCopy @jsar.resultMat
 
       idx++
-
-class JSAR
-  constructor: (
-    canvasDom
-    canvasGLDom
-  ) ->
-    @raster = new NyARRgbRaster_Canvas2D canvasDom
-    @param = new FLARParam WIDTH, HEIGHT
-    @detector = new FLARMultiIdMarkerDetector @param, 120
-    @detector.setContinueMode true
-
-    display = new Magi.Scene canvasGLDom
-
-    @param.copyCameraMatrix display.camera.perspectiveMatrix, 10, 10000
-
 
 
 # Init
@@ -96,7 +110,7 @@ if navigator.getUserMedia
   canvasGL[0].height = HEIGHT
 
   jsar = new JSAR canvas[0], canvasGL[0]
-  canvasStream = new CanvasStream canvas[0], video[0], jsar
+  jsarEngine = new JSAREngine canvas[0], video[0], jsar
 
   # Get Camera Feed
   navigator.getUserMedia {
@@ -108,7 +122,7 @@ if navigator.getUserMedia
 
     # Set Camera Feeds
     video.attr "src", window.URL.createObjectURL stream
-    canvasStream.update()
+    jsarEngine.update()
 
   , (evt) ->
     new Error "Could not get Camera Stream", evt
