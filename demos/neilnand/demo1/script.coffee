@@ -1,7 +1,7 @@
 # Properties
 WIDTH = 640
-HEIGHT = 320
-USE_CAMERA = false
+HEIGHT = 480
+USE_CAMERA = true
 
 # Shim
 navigator.getUserMedia =
@@ -35,7 +35,7 @@ class JSAR
 
     @display = new Magi.Scene @canvasGLDom
 
-    @param.copyCameraMatrix @display.camera.perspectiveMatrix, 10, 10000
+    @param.copyCameraMatrix @display.camera.perspectiveMatrix, 100, 10000
     @display.camera.useProjectionMatrix = true
 
     @videoTex = new Magi.FlipFilterQuad()
@@ -114,31 +114,31 @@ class JSAR
 
       @overlays[id].display = true
 
-      mat = marker.transform
+      arMat = marker.transform
 
-      tf = @overlays[id].transform
-      tf[0] = mat.m00
-      tf[1] = -mat.m10
-      tf[2] = mat.m20
-      tf[3] = 0
-      tf[4] = mat.m01
-      tf[5] = -mat.m11
-      tf[6] = mat.m21
-      tf[7] = 0
-      tf[8] = -mat.m02
-      tf[9] = mat.m12
-      tf[10] = -mat.m22
-      tf[11] = 0
-      tf[12] = mat.m03
-      tf[13] = -mat.m13
-      tf[14] = mat.m23
-      tf[15] = 1
+      glMat = @overlays[id].transform
+      glMat[0] = arMat.m00
+      glMat[1] = -arMat.m10
+      glMat[2] = arMat.m20
+      glMat[3] = 0
+      glMat[4] = arMat.m01
+      glMat[5] = -arMat.m11
+      glMat[6] = arMat.m21
+      glMat[7] = 0
+      glMat[8] = -arMat.m02
+      glMat[9] = arMat.m12
+      glMat[10] = -arMat.m22
+      glMat[11] = 0
+      glMat[12] = arMat.m03
+      glMat[13] = -arMat.m13
+      glMat[14] = arMat.m23
+      glMat[15] = 1
       
         
   createOverlay: (id) ->
     pivot = new Magi.Node()
     pivot.transform = mat4.identity()
-    pivot.setScale 80
+    pivot.setScale 100
 
     overlay = new Magi.Cube()
     overlay.setZ -0.125

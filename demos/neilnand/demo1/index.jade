@@ -1,3 +1,9 @@
+mixin output(label, isFeature)
+  - css = isFeature ? " feature" : ""
+  div(class="output" + css)
+    block
+    span(class="label")= label
+
 doctype html
 html(lang="en")
   head
@@ -9,9 +15,12 @@ html(lang="en")
 
   body
 
-    canvas(class="gl")
-    canvas(class="output")
-    video(autoplay=true)
+    +output("Rendered <canvas>", true)
+      canvas(class="gl")
+    +output("Raw <canvas>")
+      canvas(class="output")
+    +output("Input <video>")
+      video(autoplay=true)
 
     script(src="./../../resources/jquery/dist/jquery.min.js")
     script(src="./../../magi.js")
