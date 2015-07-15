@@ -23,7 +23,6 @@ class Error
     console.log "ERROR:", msg, e
 
 
-
 class JSAR
   constructor: (
     canvasDom
@@ -53,10 +52,13 @@ class JSAREngine
   constructor: (@canvasDom, @videoDom, @jsar) ->
     @context = @canvasDom.getContext "2d"
   update: =>
-    @render()
+
+    @processVisuals()
+    @processDetection()
+
     window.requestAnimFrame =>
       @update()
-  render: ->
+  processVisuals: ->
 
     @context.drawImage @videoDom, 0, 0, WIDTH, HEIGHT
     @canvasDom.changed = true
@@ -64,6 +66,7 @@ class JSAREngine
     @jsar.videoTex.material.textures.Texture0.changed = true
     @jsar.videoTex.material.textures.Texture0.upload()
 
+  processDetection: ->
     markerCount = @jsar.detector.detectMarkerLite(@jsar.raster, 170)
 
     idx = 0
@@ -79,14 +82,11 @@ class JSAREngine
           currId = (currId << 8) | id.getPacketData(i)
           i++
 
-      if not @jsar.markers[currId]
-        @jsar.markers[currId] = {}
-
       @jsar.detector.getTransformMatrix idx, @jsar.resultMat
-
-      console.log @jsar.markers[currId], Object.asCopy @jsar.resultMat
-
+      @jsar.markers[currId] = {} if not @jsar.markers[currId]
       @jsar.markers[currId].transform = Object.asCopy @jsar.resultMat
+
+      console.log @jsar.markers[currId]
 
       idx++
 
