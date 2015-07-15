@@ -25,53 +25,51 @@ class Error
 
 
 class JSAR
-  constructor: (
-    canvasDom
-    canvasGLDom
-  ) ->
-    @raster = new NyARRgbRaster_Canvas2D canvasDom
+  constructor: (@canvasDom, @canvasGLDom, @videoDom) ->
+    @context = @canvasDom.getContext "2d"
+    @raster = new NyARRgbRaster_Canvas2D @canvasDom
     @param = new FLARParam WIDTH, HEIGHT
     @detector = new FLARMultiIdMarkerDetector @param, 120
     @detector.setContinueMode true
     @resultMat = new NyARTransMatResult()
 
-    @display = new Magi.Scene canvasGLDom
+    @display = new Magi.Scene @canvasGLDom
 
     @param.copyCameraMatrix @display.camera.perspectiveMatrix, 10, 10000
     @display.camera.useProjectionMatrix = true
 
     @videoTex = new Magi.FlipFilterQuad()
     @videoTex.material.textures.Texture0 = new Magi.Texture()
-    @videoTex.material.textures.Texture0.image = canvasDom
+    @videoTex.material.textures.Texture0.image = @canvasDom
     @videoTex.material.textures.Texture0.generateMipmaps = false
     @display.scene.appendChild @videoTex
 
     @markers = {}
-    @cubes = {}
-
-
-class JSAREngine
-  constructor: (@canvasDom, @videoDom, @jsar) ->
-    @context = @canvasDom.getContext "2d"
+    @overlays = {}
+    
   update: =>
 
     try
       @processVisuals()
       @processDetection()
-      @render()
+      @renderOverlay()
 
     window.requestAnimFrame =>
       @update()
   processVisuals: ->
 
+    # Update Canvas that is fed into AR
     @context.drawImage @videoDom, 0, 0, WIDTH, HEIGHT
     @canvasDom.changed = true
 
-    @jsar.videoTex.material.textures.Texture0.changed = true
-    @jsar.videoTex.material.textures.Texture0.upload()
+    # Update Material that is AR super-imposed on GL
+    @videoTex.material.textures.Texture0.changed = true
+    @videoTex.material.textures.Texture0.upload()
 
   processDetection: ->
-    markerCount = @jsar.detector.detectMarkerLite(@jsar.raster, 170)
+
+    # Detect and update transformations of markers
+    markerCount = @detector.detectMarkerLite(@raster, 170)
 
     @detected = !!markerCount
 
@@ -80,7 +78,7 @@ class JSAREngine
     idx = 0
     while idx < markerCount
 
-      id = @jsar.detector.getIdMarkerData idx
+      id = @detector.getIdMarkerData idx
 
       currId = -1
       if id.packetLength <= 4
@@ -90,57 +88,62 @@ class JSAREngine
           currId = (currId << 8) | id.getPacketData(i)
           i++
 
-      @jsar.detector.getTransformMatrix idx, @jsar.resultMat
-      @jsar.markers[currId] = {} if not @jsar.markers[currId]
-      @jsar.markers[currId].transform = Object.asCopy @jsar.resultMat
+      @detector.getTransformMatrix idx, @resultMat
+      @markers[currId] = {} if not @markers[currId]
+      @markers[currId].transform = Object.asCopy @resultMat
 
       idx++
 
-  render: ->
+  renderOverlay: ->
+
     if not @detected
-      if @cubesVisible
-        for id, cube of @jsar.cubes
-          cube.display = false
-        @cubesVisible = false
+
+      # Remove Overlays if Marker not detected
+      if @overlaysVisible
+        for id, overlay of @overlays
+          overlay.display = false
+        @overlaysVisible = false
       return
 
-    @cubesVisible = true
+    # Display and update overlays
 
-    for id, marker of @jsar.markers
-      @createCube id if not @jsar.cubes[id]
+    @overlaysVisible = true
 
-      @jsar.cubes[id].display = true
+    for id, marker of @markers
+      @createOverlay id if not @overlays[id]
+
+      @overlays[id].display = true
 
       mat = marker.transform
 
-      cm = @jsar.cubes[id].transform
-      cm[0] = mat.m00
-      cm[1] = -mat.m10
-      cm[2] = mat.m20
-      cm[3] = 0
-      cm[4] = mat.m01
-      cm[5] = -mat.m11
-      cm[6] = mat.m21
-      cm[7] = 0
-      cm[8] = -mat.m02
-      cm[9] = mat.m12
-      cm[10] = -mat.m22
-      cm[11] = 0
-      cm[12] = mat.m03
-      cm[13] = -mat.m13
-      cm[14] = mat.m23
-      cm[15] = 1
+      tf = @overlays[id].transform
+      tf[0] = mat.m00
+      tf[1] = -mat.m10
+      tf[2] = mat.m20
+      tf[3] = 0
+      tf[4] = mat.m01
+      tf[5] = -mat.m11
+      tf[6] = mat.m21
+      tf[7] = 0
+      tf[8] = -mat.m02
+      tf[9] = mat.m12
+      tf[10] = -mat.m22
+      tf[11] = 0
+      tf[12] = mat.m03
+      tf[13] = -mat.m13
+      tf[14] = mat.m23
+      tf[15] = 1
       
         
-  createCube: (id) ->
+  createOverlay: (id) ->
     pivot = new Magi.Node()
     pivot.transform = mat4.identity()
     pivot.setScale 80
 
-    cube = new Magi.Cube()
-    cube.setZ -0.125
-    cube.scaling[2] = 0.25
-    pivot.appendChild cube
+    overlay = new Magi.Cube()
+    overlay.setZ -0.125
+    overlay.scaling[2] = 0.25
+    pivot.appendChild overlay
 
     txt = new Magi.Text id.toString()
     txt.setColor "black"
@@ -149,18 +152,13 @@ class JSAREngine
     txt.setZ -0.6
     txt.setY -0.34
     txt.setScale 1/80
-    cube.appendChild txt
+    overlay.appendChild txt
 
-    pivot.cube = cube
+    pivot.overlay = overlay
     pivot.txt = txt
 
-    @jsar.display.scene.appendChild pivot
-    @jsar.cubes[id] = pivot
-
-
-
-
-
+    @display.scene.appendChild pivot
+    @overlays[id] = pivot
 
 
 # Setup Elements
@@ -179,8 +177,7 @@ canvasGL = $ "canvas.gl"
 canvasGL[0].width = WIDTH
 canvasGL[0].height = HEIGHT
 
-jsar = new JSAR canvas[0], canvasGL[0]
-jsarEngine = new JSAREngine canvas[0], video[0], jsar
+jsar = new JSAR canvas[0], canvasGL[0], video[0]
 
 if navigator.getUserMedia and USE_CAMERA
   console.log "Camera Available"
@@ -195,7 +192,7 @@ if navigator.getUserMedia and USE_CAMERA
 
     # Set Camera Feeds
     video.attr "src", window.URL.createObjectURL stream
-    jsarEngine.update()
+    jsar.update()
 
   , (evt) ->
     new Error "Could not get Camera Stream", evt
@@ -206,4 +203,4 @@ else
   # Use Looping Video
   video.attr "src", "video_test.mp4"
   video[0].loop = true
-  jsarEngine.update()
+  jsar.update()
