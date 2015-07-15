@@ -35,18 +35,19 @@ class JSAR
     @detector.setContinueMode true
     @resultMat = new NyARTransMatResult()
 
-    display = new Magi.Scene canvasGLDom
+    @display = new Magi.Scene canvasGLDom
 
-    @param.copyCameraMatrix display.camera.perspectiveMatrix, 10, 10000
-    display.camera.useProjectionMatrix = true;
+    @param.copyCameraMatrix @display.camera.perspectiveMatrix, 10, 10000
+    @display.camera.useProjectionMatrix = true
 
     @videoTex = new Magi.FlipFilterQuad()
     @videoTex.material.textures.Texture0 = new Magi.Texture()
     @videoTex.material.textures.Texture0.image = canvasDom
     @videoTex.material.textures.Texture0.generateMipmaps = false
-    display.scene.appendChild @videoTex
+    @display.scene.appendChild @videoTex
 
     @markers = {}
+    @cubes = {}
 
 
 class JSAREngine
@@ -72,6 +73,10 @@ class JSAREngine
   processDetection: ->
     markerCount = @jsar.detector.detectMarkerLite(@jsar.raster, 170)
 
+    @detected = !!markerCount
+
+    return if not @detected
+
     idx = 0
     while idx < markerCount
 
@@ -89,13 +94,73 @@ class JSAREngine
       @jsar.markers[currId] = {} if not @jsar.markers[currId]
       @jsar.markers[currId].transform = Object.asCopy @jsar.resultMat
 
-      console.log @jsar.markers[currId]
-
       idx++
 
   render: ->
-    for marker in @jsar.markers
-      console.log marker
+    if not @detected
+      if @cubesVisible
+        for id, cube of @jsar.cubes
+          cube.display = false
+        @cubesVisible = false
+      return
+
+    @cubesVisible = true
+
+    for id, marker of @jsar.markers
+      @createCube id if not @jsar.cubes[id]
+
+      @jsar.cubes[id].display = true
+
+      mat = marker.transform
+
+      cm = @jsar.cubes[id].transform
+      cm[0] = mat.m00
+      cm[1] = -mat.m10
+      cm[2] = mat.m20
+      cm[3] = 0
+      cm[4] = mat.m01
+      cm[5] = -mat.m11
+      cm[6] = mat.m21
+      cm[7] = 0
+      cm[8] = -mat.m02
+      cm[9] = mat.m12
+      cm[10] = -mat.m22
+      cm[11] = 0
+      cm[12] = mat.m03
+      cm[13] = -mat.m13
+      cm[14] = mat.m23
+      cm[15] = 1
+      
+        
+  createCube: (id) ->
+    pivot = new Magi.Node()
+    pivot.transform = mat4.identity()
+    pivot.setScale 80
+
+    cube = new Magi.Cube()
+    cube.setZ -0.125
+    cube.scaling[2] = 0.25
+    pivot.appendChild cube
+
+    txt = new Magi.Text id.toString()
+    txt.setColor "black"
+    txt.setFontSize 48
+    txt.setAlign txt.centerAlign, txt.bottomAlign
+    txt.setZ -0.6
+    txt.setY -0.34
+    txt.setScale 1/80
+    cube.appendChild txt
+
+    pivot.cube = cube
+    pivot.txt = txt
+
+    @jsar.display.scene.appendChild pivot
+    @jsar.cubes[id] = pivot
+
+
+
+
+
 
 
 # Setup Elements
@@ -138,6 +203,7 @@ if navigator.getUserMedia and USE_CAMERA
 else
   console.log "Camera Not Available"
 
+  # Use Looping Video
   video.attr "src", "video_test.mp4"
   video[0].loop = true
   jsarEngine.update()
