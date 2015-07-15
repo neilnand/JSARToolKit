@@ -46,6 +46,8 @@ class JSAR
     @videoTex.material.textures.Texture0.generateMipmaps = false
     display.scene.appendChild @videoTex
 
+    @markers = {}
+
 
 class JSAREngine
   constructor: (@canvasDom, @videoDom, @jsar) ->
@@ -64,8 +66,6 @@ class JSAREngine
 
     markerCount = @jsar.detector.detectMarkerLite(@jsar.raster, 170)
 
-    markers = {}
-
     idx = 0
     while idx < markerCount
 
@@ -79,14 +79,14 @@ class JSAREngine
           currId = (currId << 8) | id.getPacketData(i)
           i++
 
-      if markers[currId] is null
-        markers[currId] = {}
+      if not @jsar.markers[currId]
+        @jsar.markers[currId] = {}
 
       @jsar.detector.getTransformMatrix idx, @jsar.resultMat
 
-      console.log markers[currId], Object.asCopy @jsar.resultMat
+      console.log @jsar.markers[currId], Object.asCopy @jsar.resultMat
 
-      markers[currId]?.transform = Object.asCopy @jsar.resultMat
+      @jsar.markers[currId].transform = Object.asCopy @jsar.resultMat
 
       idx++
 
