@@ -7,13 +7,22 @@ mixin output(label, isFeature)
 doctype html
 html(lang="en")
   head
-    title= "Demo 1"
+    title= "Demo"
     link(type="text/css", rel="stylesheet", href="style.css")
     meta(name="viewport", content="width=device-width, initial-scale=1")
     meta(http-equiv="content-language", content="en")
     meta(charset="UTF-8")
 
   body
+
+    header
+      h1= "Demo based on @kig's tutorial and repo"
+      ul
+        li= "Magi.JS"
+        li
+          a(href="http://www.html5rocks.com/en/tutorials/webgl/jsartoolkit_webrtc/")= "@kig html5rocks Tutorial"
+        li
+          a(href="https://github.com/kig/JSARToolKit")= "@kig JSARToolKit Repo"
 
     +output("Rendered <canvas>", true)
       canvas(class="gl")
