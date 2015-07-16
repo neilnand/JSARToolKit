@@ -16,14 +16,10 @@ html(lang="en")
   body
 
     header
-      h1= "Demo based on @kig's tutorial and repo"
+      h1= "Single ID Marker Demo"
       ul
-        li= "Multiple Markers"
-        li= "Magi.JS"
         li
-          a(href="http://www.html5rocks.com/en/tutorials/webgl/jsartoolkit_webrtc/")= "@kig html5rocks Tutorial"
-        li
-          a(href="https://github.com/kig/JSARToolKit")= "@kig JSARToolKit Repo"
+          a(href="./../demo1")= "extends Multiple ID Marker Demo"
 
     +output("Rendered <canvas>", true)
       canvas(class="gl")
@@ -34,5 +30,5 @@ html(lang="en")
 
     script(src="./../../resources/jquery/dist/jquery.min.js")
     script(src="./../../magi.js")
-    script(src="./../../../JSARToolKit.min.js")
+    script(src="./../../../JSARToolKit.js")
     script(src="script.js")

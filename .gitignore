@@ -5,3 +5,5 @@ demos/neilnand/**/*.css.map
 npm-debug.log
 bower_components/**/*
 demos/resources/**/*
+
+_assets/**/*

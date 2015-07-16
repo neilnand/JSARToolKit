@@ -1,7 +1,7 @@
 # Properties
 WIDTH = 640
 HEIGHT = 480
-USE_STATIC_VIDEO = true
+USE_STATIC_VIDEO = false
 
 # Shim
 navigator.getUserMedia =
@@ -29,13 +29,14 @@ class JSAR
     @context = @canvasDom.getContext "2d"
     @raster = new NyARRgbRaster_Canvas2D @canvasDom
     @param = new FLARParam WIDTH, HEIGHT
-    @detector = new FLARMultiIdMarkerDetector @param, 120
+
+    @detector = new FLARSingleIdMarkerDetector @param, 120
     @detector.setContinueMode true
     @resultMat = new NyARTransMatResult()
 
     @display = new Magi.Scene @canvasGLDom
 
-    @param.copyCameraMatrix @display.camera.perspectiveMatrix, 100, 10000
+    @param.copyCameraMatrix @display.camera.perspectiveMatrix, 10, 10000
     @display.camera.useProjectionMatrix = true
 
     @videoTex = new Magi.FlipFilterQuad()
@@ -69,30 +70,23 @@ class JSAR
   processDetection: ->
 
     # Detect and update transformations of markers
-    markerCount = @detector.detectMarkerLite(@raster, 170)
-
-    @detected = !!markerCount
+    @detected = @detector.detectMarkerLite(@raster, 170)
 
     return if not @detected
 
-    idx = 0
-    while idx < markerCount
+    id = @detector.getIdMarkerData()
 
-      id = @detector.getIdMarkerData idx
+    currId = -1
+    if id.packetLength <= 4
+      currId = 0
+      i = 0
+      while i < id.packetLength
+        currId = (currId << 8) | id.getPacketData(i)
+        i++
 
-      currId = -1
-      if id.packetLength <= 4
-        currId = 0
-        i = 0
-        while i < id.packetLength
-          currId = (currId << 8) | id.getPacketData(i)
-          i++
-
-      @detector.getTransformMatrix idx, @resultMat
-      @markers[currId] = {} if not @markers[currId]
-      @markers[currId].transform = Object.asCopy @resultMat
-
-      idx++
+    @detector.getTransformMatrix @resultMat
+    @markers[currId] = {} if not @markers[currId]
+    @markers[currId].transform = Object.asCopy @resultMat
 
   renderOverlay: ->
 
@@ -133,8 +127,7 @@ class JSAR
       glMat[13] = -arMat.m13
       glMat[14] = arMat.m23
       glMat[15] = 1
-      
-        
+
   createOverlay: (id) ->
     pivot = new Magi.Node()
     pivot.transform = mat4.identity()
@@ -200,7 +193,17 @@ if navigator.getUserMedia and not USE_STATIC_VIDEO
 else
   console.log "Camera Not Available"
 
+  videoToggle = ->
+    if video[0].paused
+      video[0].play()
+    else
+      video[0].pause()
+
   # Use Looping Video
   video.attr "src", "video_test.mp4"
   video[0].loop = true
+  canvasGL.click videoToggle
+  canvas.click videoToggle
+  video.click videoToggle
   jsar.update()
+
