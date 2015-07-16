@@ -1,7 +1,7 @@
 # Properties
 WIDTH = 640
 HEIGHT = 480
-USE_STATIC_VIDEO = false
+USE_STATIC_VIDEO = true
 
 # Shim
 navigator.getUserMedia =
