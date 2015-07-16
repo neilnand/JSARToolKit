@@ -1,0 +1,34 @@
+mixin output(label, isFeature)
+  - css = isFeature ? " feature" : ""
+  div(class="output" + css)
+    block
+    span(class="label")= label
+
+doctype html
+html(lang="en")
+  head
+    title= "Demo"
+    link(type="text/css", rel="stylesheet", href="style.css")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    meta(http-equiv="content-language", content="en")
+    meta(charset="UTF-8")
+
+  body
+
+    header
+      h1= "Single Custom Marker Demo"
+      ul
+        li
+          a(href="./../demo2")= "extends Single ID Marker Demo"
+
+    +output("Rendered <canvas>", true)
+      canvas(class="gl")
+    +output("Input <canvas>")
+      canvas(class="output")
+    +output("Input <video>")
+      video(autoplay=true)
+
+    script(src="./../../resources/jquery/dist/jquery.min.js")
+    script(src="./../../magi.js")
+    script(src="./../../../JSARToolKit.js")
+    script(src="script.js")
