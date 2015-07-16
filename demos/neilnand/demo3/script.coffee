@@ -23,7 +23,6 @@ class Error
   constructor: (msg, e) ->
     console.log "ERROR:", msg, e
 
-
 class JSAR
   constructor: (@canvasDom, @canvasGLDom, @videoDom) ->
     @context = @canvasDom.getContext "2d"
@@ -33,7 +32,7 @@ class JSAR
     @resultMat = new NyARTransMatResult()
     @display = new Magi.Scene @canvasGLDom
 
-    @param.copyCameraMatrix @display.camera.perspectiveMatrix, 10, 10000
+    @param.copyCameraMatrix @display.camera.perspectiveMatrix, 100, 10000
     @display.camera.useProjectionMatrix = true
 
     @videoTex = new Magi.FlipFilterQuad()
@@ -42,8 +41,8 @@ class JSAR
     @videoTex.material.textures.Texture0.generateMipmaps = false
     @display.scene.appendChild @videoTex
 
-    @markers = {}
-    @overlays = {}
+    @marker = {}
+    @overlay = @createOverlay()
 
   init: ->
 
@@ -52,7 +51,7 @@ class JSAR
       @mpattern = new FLARCode 64, 64
       @mpattern.loadARPatt data
 
-      @detector = new FLARSingleMarkerDetector @param, @mpattern, 120
+      @detector = new FLARSingleMarkerDetector @param, @mpattern, 100
       @detector.setContinueMode true
 
       @update()
@@ -83,63 +82,41 @@ class JSAR
 
     return if not @detected
 
-    console.log 111
-
-    id = @detector.getIdMarkerData()
-
-    currId = -1
-    if id.packetLength <= 4
-      currId = 0
-      i = 0
-      while i < id.packetLength
-        currId = (currId << 8) | id.getPacketData(i)
-        i++
-
     @detector.getTransformMatrix @resultMat
-    @markers[currId] = {} if not @markers[currId]
-    @markers[currId].transform = Object.asCopy @resultMat
+    @marker.transform = Object.asCopy @resultMat
 
   renderOverlay: ->
 
     if not @detected
-
       # Remove Overlays if Marker not detected
-      if @overlaysVisible
-        for id, overlay of @overlays
-          overlay.display = false
-        @overlaysVisible = false
+      if @overlay.display
+        @overlay.display = false
       return
 
     # Display and update overlays
+    @overlay.display = true
 
-    @overlaysVisible = true
+    arMat = @marker.transform
+    glMat = @overlay.transform
 
-    for id, marker of @markers
-      @createOverlay id if not @overlays[id]
+    glMat[0] = arMat.m00
+    glMat[1] = -arMat.m10
+    glMat[2] = arMat.m20
+    glMat[3] = 0
+    glMat[4] = arMat.m01
+    glMat[5] = -arMat.m11
+    glMat[6] = arMat.m21
+    glMat[7] = 0
+    glMat[8] = -arMat.m02
+    glMat[9] = arMat.m12
+    glMat[10] = -arMat.m22
+    glMat[11] = 0
+    glMat[12] = arMat.m03
+    glMat[13] = -arMat.m13
+    glMat[14] = arMat.m23
+    glMat[15] = 1
 
-      @overlays[id].display = true
-
-      arMat = marker.transform
-
-      glMat = @overlays[id].transform
-      glMat[0] = arMat.m00
-      glMat[1] = -arMat.m10
-      glMat[2] = arMat.m20
-      glMat[3] = 0
-      glMat[4] = arMat.m01
-      glMat[5] = -arMat.m11
-      glMat[6] = arMat.m21
-      glMat[7] = 0
-      glMat[8] = -arMat.m02
-      glMat[9] = arMat.m12
-      glMat[10] = -arMat.m22
-      glMat[11] = 0
-      glMat[12] = arMat.m03
-      glMat[13] = -arMat.m13
-      glMat[14] = arMat.m23
-      glMat[15] = 1
-
-  createOverlay: (id) ->
+  createOverlay: ->
     pivot = new Magi.Node()
     pivot.transform = mat4.identity()
     pivot.setScale 100
@@ -149,7 +126,7 @@ class JSAR
     overlay.scaling[2] = 0.25
     pivot.appendChild overlay
 
-    txt = new Magi.Text id.toString()
+    txt = new Magi.Text "NN"
     txt.setColor "black"
     txt.setFontSize 48
     txt.setAlign txt.centerAlign, txt.bottomAlign
@@ -162,7 +139,7 @@ class JSAR
     pivot.txt = txt
 
     @display.scene.appendChild pivot
-    @overlays[id] = pivot
+    pivot
 
 
 # Setup Elements
