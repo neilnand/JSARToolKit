@@ -42,9 +42,6 @@ class JSAR
     @videoTex.material.textures.Texture0.generateMipmaps = false
     @display.scene.appendChild @videoTex
 
-    @marker = {}
-    @overlay = @createOverlay()
-
   init: ->
 
     $.get "custom.pat", (data) =>
@@ -56,10 +53,15 @@ class JSAR
       @detector = new FLARSingleMarkerDetector @param, @mpattern, 100
       @detector.setContinueMode true
 
+      img = $("<img/>").attr("src", "bizCard.png").load (evt) =>
 
+        if img[0].complete
+          @marker = {}
+          @overlay = @createOverlay img
+        else
+          new Error "Could not load Overlay Image", evt
 
       # Load Marker Overlay
-
       @update()
 
   update: =>
@@ -123,31 +125,17 @@ class JSAR
     glMat[14] = arMat.m23
     glMat[15] = 1
 
-  createOverlay: ->
+  createOverlay: (img) ->
     pivot = new Magi.Node()
     pivot.transform = mat4.identity()
     pivot.setScale 100
 
-    overlay = new Magi.Cube()
-    overlay.setZ -0.125
-    overlay.scaling[2] = 0.25
+    overlay = new Magi.Image img[0]
+    overlay.setZ .07
+    overlay.setScale 1/110
     pivot.appendChild overlay
 
-#    new Magi
-
-    txt = new Magi.Text "NN"
-    txt.setColor "black"
-    txt.setFontSize 48
-    txt.setAlign txt.centerAlign, txt.bottomAlign
-    txt.setZ -0.6
-    txt.setY -0.34
-    txt.setScale 1/80
-    overlay.appendChild txt
-
-
-
     pivot.overlay = overlay
-    pivot.txt = txt
 
     @display.scene.appendChild pivot
     pivot
