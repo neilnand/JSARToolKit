@@ -65,7 +65,9 @@ Ensure you have the following repositories setup:
 
 3. live updates - watch for changes
 
+        ## In another Terminal Window Run
         $ grunt devwatch
 
+4. open up web browser to:
 
-Have both 2 & 3 running in separate Terminal tabs and start developing demos!
+        ## http://localhost:3000
