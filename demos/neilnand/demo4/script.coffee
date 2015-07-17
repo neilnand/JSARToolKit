@@ -24,20 +24,21 @@ class Error
     console.log "ERROR:", msg, e
 
 class JSAR
-  constructor: (@canvasDom, @canvasGLDom, @videoDom) ->
-    @context = @canvasDom.getContext "2d"
-    @raster = new NyARRgbRaster_Canvas2D @canvasDom
+  constructor: (@elements) ->
+    @ctxIn = @elements.canvasIn[0].getContext "2d"
+    @ctxOut = @elements.canvasOut[0].getContext "2d"
+    @raster = new NyARRgbRaster_Canvas2D @elements.canvasIn[0]
     @param = new FLARParam WIDTH, HEIGHT
 
     @resultMat = new NyARTransMatResult()
-    @display = new Magi.Scene @canvasGLDom
+    @display = new Magi.Scene @elements.canvasGL[0]
 
     @param.copyCameraMatrix @display.camera.perspectiveMatrix, 100, 10000
     @display.camera.useProjectionMatrix = true
 
     @videoTex = new Magi.FlipFilterQuad()
     @videoTex.material.textures.Texture0 = new Magi.Texture()
-    @videoTex.material.textures.Texture0.image = @videoDom
+    @videoTex.material.textures.Texture0.image = @elements.canvasOut[0]
     @videoTex.material.textures.Texture0.generateMipmaps = false
     @display.scene.appendChild @videoTex
 
@@ -48,11 +49,16 @@ class JSAR
 
     $.get "custom.pat", (data) =>
 
+      # Load Pattern
       @mpattern = new FLARCode 64, 64
       @mpattern.loadARPatt data
 
       @detector = new FLARSingleMarkerDetector @param, @mpattern, 100
       @detector.setContinueMode true
+
+
+
+      # Load Marker Overlay
 
       @update()
 
@@ -68,9 +74,9 @@ class JSAR
   processVisuals: ->
 
     # Update Canvas that is fed into AR
-    @context.drawImage @videoDom, 0, 0, WIDTH, HEIGHT
-    utils.invertContext @context, 0, 0, WIDTH, HEIGHT
-    @canvasDom.changed = true
+    @ctxOut.drawImage @elements.video[0], 0, 0, WIDTH, HEIGHT
+    utils.invertContext @ctxOut, @ctxIn, 0, 0, WIDTH, HEIGHT
+    @elements.canvasIn[0].changed = true
 
     # Update Material that is AR super-imposed on GL
     @videoTex.material.textures.Texture0.changed = true
@@ -127,6 +133,8 @@ class JSAR
     overlay.scaling[2] = 0.25
     pivot.appendChild overlay
 
+#    new Magi
+
     txt = new Magi.Text "NN"
     txt.setColor "black"
     txt.setFontSize 48
@@ -136,6 +144,8 @@ class JSAR
     txt.setScale 1/80
     overlay.appendChild txt
 
+
+
     pivot.overlay = overlay
     pivot.txt = txt
 
@@ -143,8 +153,8 @@ class JSAR
     pivot
 
 class Utils
-  invertContext: (ctx, x, y, w, h) ->
-    imgData = ctx.getImageData x, y, w, h
+  invertContext: (ctxIn, ctxOut, x, y, w, h) ->
+    imgData = ctxIn.getImageData x, y, w, h
     data = imgData.data
 
     i = 0
@@ -154,27 +164,22 @@ class Utils
       data[i + 2] = 255 - data[i + 2]
       i += 4
 
-    ctx.putImageData imgData, x, y
+    ctxOut.putImageData imgData, x, y
 
 
 # Setup Elements
-video = $ "video"
-video[0].width = WIDTH
-video[0].height = HEIGHT
-video[0].controls = false
-video[0].onloadedmetadata = (evt) ->
-  console.log "video.onloadedmetadata", evt
+elements =
+  video: $ "video"
+  canvasIn: $ "canvas.input"
+  canvasOut: $ "canvas.output"
+  canvasGL: $ "canvas.gl"
 
-canvas = $ "canvas.output"
-canvas[0].width = WIDTH
-canvas[0].height = HEIGHT
-
-canvasGL = $ "canvas.gl"
-canvasGL[0].width = WIDTH
-canvasGL[0].height = HEIGHT
+for id, el of elements
+  el[0].width = WIDTH
+  el[0].height = HEIGHT
 
 utils = new Utils()
-jsar = new JSAR canvas[0], canvasGL[0], video[0]
+jsar = new JSAR elements
 
 if navigator.getUserMedia and not USE_STATIC_VIDEO
   console.log "Camera Available"
@@ -188,7 +193,7 @@ if navigator.getUserMedia and not USE_STATIC_VIDEO
     }, (stream) ->
 
     # Set Camera Feeds
-    video.attr "src", window.URL.createObjectURL stream
+    elements.video.attr "src", window.URL.createObjectURL stream
     jsar.init()
 
   , (evt) ->
@@ -198,16 +203,15 @@ else
   console.log "Camera Not Available"
 
   videoToggle = ->
-    if video[0].paused
-      video[0].play()
+    if elements.video[0].paused
+      elements.video[0].play()
     else
-      video[0].pause()
+      elements.video[0].pause()
 
   # Use Looping Video
-  video.attr "src", "video_test_biz_card.mp4"
-  video[0].loop = true
-  canvasGL.click videoToggle
-  canvas.click videoToggle
-  video.click videoToggle
+  elements.video.attr "src", "video_test_biz_card.mp4"
+  elements.video[0].loop = true
+  for id, el of elements
+    el.click videoToggle
   jsar.init()
 

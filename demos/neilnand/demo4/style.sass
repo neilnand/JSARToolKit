@@ -18,13 +18,15 @@ header
     font-size: 1.4em
 
 .output
-  $maxWidth: 500px
+  $maxWidth: 600px
   $maxHeight: $maxWidth * 3/4
+  $smallerSizeFrac: 3
+  $smallerSize: 100vw / $smallerSizeFrac
   position: relative
-  width: 50vw
-  height: 50vw * 3/4
-  max-width: $maxWidth * .5
-  max-height: $maxHeight * .5
+  width: $smallerSize
+  height: $smallerSize * 3/4
+  max-width: $maxWidth / $smallerSizeFrac
+  max-height: $maxHeight / $smallerSizeFrac
   padding: 0
   font-size: inherit
   float: left
