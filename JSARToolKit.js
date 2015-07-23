@@ -13804,6 +13804,9 @@ TransformedBitmapPickup = ASKlass('TransformedBitmapPickup', NyARColorPatt_Persp
 /**
  * Exports module.
  */
+if (!module) {
+  var module = {};
+}
 module.exports = {
   NyARRgbRaster_Canvas2D: NyARRgbRaster_Canvas2D,
   FLARParam: FLARParam,
