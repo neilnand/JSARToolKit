@@ -31,6 +31,10 @@
  *
  */
 
+if (!window) {
+  var window = {};
+}
+
 if (!window.console) console = { log : function(){} };
 
 ASVector = function(elements) {
@@ -13796,3 +13800,13 @@ TransformedBitmapPickup = ASKlass('TransformedBitmapPickup', NyARColorPatt_Persp
     return this.pickFromRaster(i_src_imege, poinsts);
   }
 })
+
+/**
+ * Exports module.
+ */
+module.exports = {
+  NyARRgbRaster_Canvas2D: NyARRgbRaster_Canvas2D,
+  FLARParam: FLARParam,
+  FLARCode: FLARCode,
+  FLARSingleMarkerDetector: FLARSingleMarkerDetector
+};

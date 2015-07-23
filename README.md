@@ -71,3 +71,10 @@ Ensure you have the following repositories setup:
 4. open up web browser to:
 
         ## http://localhost:3000
+
+##### Other
+
+- Minify JSARToolKit.js
+
+        $ grunt minify
+

@@ -19,6 +19,9 @@ module.exports = (grunt) ->
     devwatch: [
       "watch:demo"
     ]
+    minify: [
+      "uglify:jsar"
+    ]
   }
 
 
@@ -75,6 +78,12 @@ module.exports = (grunt) ->
         relativeSrc: "./../bower_components/"
         options:
           type: "dir"
+
+    # Uglify
+    uglify:
+      jsar:
+        files:
+          "JSARToolKit.min.js": "JSARToolKit.js"
 
     # Watch for changes in development
     watch:
