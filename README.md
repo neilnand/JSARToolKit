@@ -45,7 +45,7 @@ JSARToolkit is a JavaScript port of NyARToolkitAS3 and FLARToolKit.
 
 ## Updates by @neilnand
 
-- NPM & Express added to get runing faster
+- NPM & Express added to get up and running faster
 - Example: Multiple ID Marker Demo
 - Example: Single ID Marker Demo
 - Example: Single Custom Marker Demo
@@ -55,7 +55,7 @@ JSARToolkit is a JavaScript port of NyARToolkitAS3 and FLARToolKit.
 ### Real World Demo
 
 1. Print or Open on mobile device: [neilnand-access-bizcard.gif](https://neilnand.com/assets/neilnand-access-bizcard.gif)
-2. Visit [neilnand.com/london-career-campaign](https://neilnand.com/london-career-campaign) using Chrome or Firefox on Desktop
+2. Visit [neilnand.com/london-career-campaign](https://neilnand.com/london-career-campaign) using *Chrome* or *Firefox* on Desktop
 3. Scroll to **London Career Campaign**
 4. Press **Click here to Activate Webcam**
 5. Show [neilnand-access-bizcard.gif](https://neilnand.com/assets/neilnand-access-bizcard.gif) image to webcam
