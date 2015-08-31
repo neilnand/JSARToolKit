@@ -1,4 +1,7 @@
-JSARToolkit
+# JSARToolkit
+
+##### Original Notes
+
 --------------------------------------------------------------------------------
 
 This is a JavaScript port of FLARToolKit, operating on canvas images and
@@ -39,7 +42,23 @@ JSARToolkit is a JavaScript port of NyARToolkitAS3 and FLARToolKit.
   Copyright (C)2011 Ilmari Heikkinen
 
 --------------------------------------------------------------------------------
-NPM & Express server added by @neilnand
+
+## Updates by @neilnand
+
+- NPM & Express added to get runing faster
+- Example: Multiple ID Marker Demo
+- Example: Single ID Marker Demo
+- Example: Single Custom Marker Demo
+- Example: Inverted Biz Card Demo
+- Pattern Generator Application: Custom Marker Pattern Generator Installer (AIR App)
+
+### Real World Demo
+
+1. Print or Open on mobile device: [neilnand-access-bizcard.gif](https://neilnand.com/assets/neilnand-access-bizcard.gif)
+2. Visit [neilnand.com/london-career-campaign](https://neilnand.com/london-career-campaign)
+3. Scroll to **London Career Campaign** on Chrome or Firefox on Desktop
+4. Press **Click here to Activate Webcam**
+5. Show [neilnand-access-bizcard.gif](https://neilnand.com/assets/neilnand-access-bizcard.gif) image to webcam
 
 ### Installation
 
